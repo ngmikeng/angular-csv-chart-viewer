@@ -1,0 +1,8 @@
+Year_UTC,Month_UTC,Day_UTC,Hour_UTC,Minute_UTC,Second_UTC,Pad,Well,Stage on Well,Treating Pressure,Slurry Rate,Prop Conc
+2025,6,26,10,0,0,Pad A,Well 1,1,8500,80.1,2.1
+2025,6,26,10,0,1,Pad A,Well 1,1,8510,80.5,2.15
+2025,6,26,10,0,2,Pad A,Well 1,1,8490,80.2,2.2
+2025,6,26,10,0,3,Pad A,Well 1,1,8520,79.9,2.25
+2025,6,26,10,0,4,Pad A,Well 1,1,8530,80.3,2.3
+2025,6,26,10,0,5,Pad A,Well 1,1,8550,81,2.35
+2025,6,26,10,0,6,Pad A,Well 1,1,8540,80.8,2.4
