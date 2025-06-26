@@ -1,6 +1,19 @@
 {
   "name": "angular-csv-chart-viewer",
   "version": "0.0.1",
+  "description": "A simple Angular application to visualize CSV data using ECharts",
+  "author": "Mn Research",
+  "license": "MIT",
+  "keywords": [
+    "angular",
+    "echarts",
+    "csv",
+    "data-visualization"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ngmikeng/angular-csv-chart-viewer.git"
+  },
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
