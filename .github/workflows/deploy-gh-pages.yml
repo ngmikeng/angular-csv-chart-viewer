@@ -34,4 +34,4 @@ jobs:
       - name: Deploy to GitHub Pages
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: npm run ng deploy --repo="https://x-access-token:${GITHUB_TOKEN}@github.com/ngmikeng/angular-csv-chart-viewer.git" --base-href=/angular-csv-chart-viewer/
+        run: npm run ng deploy --repo="https://${GITHUB_TOKEN}@github.com/ngmikeng/angular-csv-chart-viewer.git" --base-href=/angular-csv-chart-viewer/
