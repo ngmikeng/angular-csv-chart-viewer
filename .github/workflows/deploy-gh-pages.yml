@@ -21,7 +21,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm install
 
       - name: Build Angular project
         run: npx ng build --base-href "/${{ github.event.repository.name }}/"
