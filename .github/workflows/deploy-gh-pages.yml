@@ -26,7 +26,12 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Set up Git user
+        run: |
+          git config --global user.name "MN Research"
+          git config --global user.email "ngmikeng@gmail.com"
+
       - name: Deploy to GitHub Pages
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: npm run ng deploy --repo="https://github.com/ngmikeng/angular-csv-chart-viewer.git" --base-href=/angular-csv-chart-viewer/ --name="MN Research" --email="ngmikeng@gmail.com"
+        run: npm run ng deploy --repo="https://github.com/ngmikeng/angular-csv-chart-viewer.git" --base-href=/angular-csv-chart-viewer/
