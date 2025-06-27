@@ -23,11 +23,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build Angular project
-        run: npx ng build --base-href "/${{ github.event.repository.name }}/"
+      - name: Build
+        run: npm run build
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist/$(node -p "require('./angular.json').defaultProject")
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          npm run ng -- deploy --repo="https://github.com/ngmikeng/angular-csv-chart-viewer.git" --base-href=/angular-csv-chart-viewer/ --name=<MN Research> --email=<ngmikeng@gmail.com>
