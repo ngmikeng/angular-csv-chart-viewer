@@ -29,5 +29,4 @@ jobs:
       - name: Deploy to GitHub Pages
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          npm run ng -- deploy --repo="https://github.com/ngmikeng/angular-csv-chart-viewer.git" --base-href=/angular-csv-chart-viewer/ --name="<MNResearch>" --email=<ngmikeng@gmail.com>
+        run: ng deploy --repo="https://github.com/ngmikeng/angular-csv-chart-viewer.git" --base-href=/angular-csv-chart-viewer/ --name=<MNResearch> --email=<ngmikeng@gmail.com>
