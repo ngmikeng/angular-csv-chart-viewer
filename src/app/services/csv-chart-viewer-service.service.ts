@@ -5,10 +5,56 @@ import { CsvDataPoint } from './data-csv-service.service';
 @Injectable({ providedIn: 'root' })
 export class CsvChartViewerService {
   private defaultFieldsToPlot = ['Treating Pressure', 'Slurry Rate', 'Prop Conc', 'Btm Prop Conc'];
-  private defaultColors = ['#fc1302', '#00008b', '#228b22', '#ffe033'];
+  private defaultColors = [
+    '#fc1302',  // Original red
+    '#00008b',  // Original dark blue
+    '#228b22',  // Original forest green
+    '#ffe033',  // Original yellow
+    '#9932cc',  // Dark orchid (purple)
+    '#ff8c00',  // Dark orange
+    '#20b2aa',  // Light sea green
+    '#4169e1',  // Royal blue
+    '#dc143c',  // Crimson
+    '#8b4513',  // Saddle brown
+    '#00ced1',  // Dark turquoise
+    '#ff69b4',  // Hot pink
+  ];
+
+  private fieldsToPlot: string[] = [...this.defaultFieldsToPlot];
+  private dataPoints: CsvDataPoint[] = [];
+
+  /**
+   * Get the current fields to plot.
+   */
+  getFieldsToPlot(): string[] {
+    return [...this.fieldsToPlot];
+  }
+
+  /**
+   * Set the fields to plot on the chart.
+   * @param fields Array of field names to plot
+   */
+  setFieldsToPlot(fields: string[]): void {
+    this.fieldsToPlot = [...fields];
+  }
+
+  /**
+   * Get the data points currently loaded in the service.
+   */
+  getDataPoints(): CsvDataPoint[] {
+    return [...this.dataPoints];
+  }
+
+  /**
+   * Set the data points for the chart.
+   * @param data Array of CsvDataPoint objects
+   */
+  setDataPoints(data: CsvDataPoint[]): void {
+    this.dataPoints = [...data];
+  }
 
   getChartOptions(data: CsvDataPoint[], fieldsToPlot?: string[]): EChartsOption {
-    fieldsToPlot = fieldsToPlot || this.defaultFieldsToPlot;
+    fieldsToPlot = fieldsToPlot || this.fieldsToPlot;
 
     // ECharts series requires data in [timestamp, value] format.
     const series = fieldsToPlot.map((field, index) => ({

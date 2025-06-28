@@ -18,11 +18,18 @@
       <p class="separator">or</p>
       <label for="file-upload" class="upload-button">Select File</label>
       <input id="file-upload" type="file" (change)="onFileSelected($event)" accept=".csv" hidden>
-       @if (fileName()) {
-        <p class="file-name">Selected: {{ fileName() }}</p>
-      }
+        @if (fileName()) {
+          <p class="file-name">Selected: {{ fileName() }}</p>
+        }
     </div>
   </div>
+
+  <!-- Field Selector UI -->
+  <app-field-selector
+    [availableFields]="availableFields()"
+    [selectedFields]="selectedFields()"
+    (selectedFieldsChange)="onFieldsSelected($event)">
+  </app-field-selector>
 
   <div class="chart-container">
     @if (isLoading()) {

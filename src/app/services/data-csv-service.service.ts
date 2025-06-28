@@ -8,10 +8,15 @@ export interface CsvDataPoint {
 export class DataCsvService {
   private requiredTimeColumns = ['Year_UTC', 'Month_UTC', 'Day_UTC', 'Hour_UTC', 'Minute_UTC', 'Second_UTC'];
   private requiredInfoColumns = ['Pad', 'Well', 'Stage on Well'];
+  private availableDataFields: string[] = [];
 
   async parseCsvFile(file: File): Promise<CsvDataPoint[]> {
     const content = await this.readFile(file);
     return this.parseCsvContent(content);
+  }
+
+  getAvailableDataFields(): string[] {
+    return [...this.availableDataFields];
   }
 
   private readFile(file: File): Promise<string> {
@@ -30,6 +35,8 @@ export class DataCsvService {
 
     const headers = lines[0].split(',').map(h => h.trim());
     const result: CsvDataPoint[] = [];
+
+    this.populateAvailableDataFields(headers);
 
     if (this.requiredTimeColumns.some(col => !headers.includes(col)) || this.requiredInfoColumns.some(col => !headers.includes(col))) {
         console.warn('Missing required columns.');
@@ -69,4 +76,8 @@ export class DataCsvService {
   }
 
   private parseValue = (value: string): string | number => value === '' || value.toLowerCase() === 'null' ? '' : (isNaN(Number(value)) ? value : Number(value));
+
+  private populateAvailableDataFields(headers: string[]): void {
+    this.availableDataFields = headers.filter(h => !h.toLowerCase().startsWith('blank') && h !== 'timestamp' && !this.requiredInfoColumns.includes(h) && !this.requiredTimeColumns.includes(h));
+  }
 }

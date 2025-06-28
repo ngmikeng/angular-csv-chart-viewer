@@ -3,29 +3,31 @@ import { NgxEchartsModule } from 'ngx-echarts';
 import { EChartsOption } from 'echarts';
 import { DataCsvService } from './services/data-csv-service.service';
 import { CsvChartViewerService } from './services/csv-chart-viewer-service.service';
+import { FieldSelector } from './components/field-selector/field-selector';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [NgxEchartsModule], // Import NgxEchartsModule here
+  imports: [NgxEchartsModule, FieldSelector],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  // The chart options property is now of type EChartsOption
   chartOptions: EChartsOption;
 
   isLoading = signal(false);
   fileName = signal('');
   errorMessage = signal('');
   isDragging = signal(false);
+  availableFields= signal<string[]>([]); // Use signal for reactivity
+  selectedFields = signal<string[]>([]); // Use signal for reactivity
 
   constructor(
     private dataCsvService: DataCsvService,
-    private previewCsvDataService: CsvChartViewerService,
+    private csvChartViewerService: CsvChartViewerService,
     private cdr: ChangeDetectorRef
   ) {
-    this.chartOptions = this.previewCsvDataService.getChartOptions([]);
+    this.chartOptions = this.csvChartViewerService.getChartOptions([]);
   }
 
   // -- Drag and Drop Event Handlers --
@@ -55,7 +57,7 @@ export class AppComponent {
         this.processFile(file);
       } else {
         this.errorMessage.set('Invalid file type. Please drop a CSV file.');
-        this.chartOptions = this.previewCsvDataService.getChartOptions([]);
+        this.chartOptions = this.csvChartViewerService.getChartOptions([]);
         this.cdr.detectChanges();
       }
     }
@@ -81,19 +83,31 @@ export class AppComponent {
     this.errorMessage.set('');
     try {
       const csvData = await this.dataCsvService.parseCsvFile(file);
+      this.csvChartViewerService.setDataPoints(csvData);
       if (csvData.length > 0) {
-        this.chartOptions = this.previewCsvDataService.getChartOptions(csvData);
+        this.chartOptions = this.csvChartViewerService.getChartOptions(csvData);
+        this.availableFields.set(this.dataCsvService.getAvailableDataFields());
+        this.selectedFields.set(this.csvChartViewerService.getFieldsToPlot()); // Default to first two fields
       } else {
         this.errorMessage.set('The CSV is empty or invalid. Please check the console for details.');
-        this.chartOptions = this.previewCsvDataService.getChartOptions([]);
+        this.chartOptions = this.csvChartViewerService.getChartOptions([]);
       }
     } catch (error) {
       console.error("Error processing file:", error);
       this.errorMessage.set('An error occurred while parsing the file.');
-      this.chartOptions = this.previewCsvDataService.getChartOptions([]);
+      this.chartOptions = this.csvChartViewerService.getChartOptions([]);
     } finally {
       this.isLoading.set(false);
       this.cdr.detectChanges();
     }
+  }
+
+  onFieldsSelected(fields: string[]) {
+    this.selectedFields.set(fields);
+    // Update the chart options with the selected fields
+    this.chartOptions = this.csvChartViewerService.getChartOptions(
+      this.csvChartViewerService.getDataPoints(),
+      fields
+    );
   }
 }

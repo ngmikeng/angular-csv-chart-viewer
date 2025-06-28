@@ -1,0 +1,66 @@
+.field-selector-container {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1em;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2rem;
+}
+.field-selected-info {
+  font-weight: bold;
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+.field-selected-info p {
+  margin-bottom: 5px;
+}
+.controls {
+  margin-bottom: 1em;
+}
+.search-input {
+  width: 100%;
+  padding: 0.5em;
+  margin-bottom: 1em;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+.actions {
+  display: flex;
+  gap: 0.5em;
+}
+.actions button {
+  padding: 0.5em 1em;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+.actions button:disabled {
+  background-color: #e0e0e0;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.actions button:hover:not(:disabled) {
+  background-color: #ddd;
+}
+.field-list-container {
+  max-height: 200px; /* Or any height you prefer */
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5em;
+  padding: 0.5em;
+  border: 1px solid #eee;
+  border-radius: 5px;
+}
+label {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
