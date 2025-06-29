@@ -3,35 +3,26 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main  # Set this to your default branch if different
-
-permissions:
-  contents: write  # Required for deploying to GitHub Pages
+      - main
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: 20
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build
-        run: npm run build
-
-      - name: Set up Git user
-        run: |
-          git config --global user.name "MN Research"
-          git config --global user.email "ngmikeng@gmail.com"
+      - name: Build Angular app to prod
+        run: npm install && npm run build:prod
 
       - name: Deploy to GitHub Pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: npm run ng deploy --repo="https://${{ secrets.GH_TOKEN }}@github.com/ngmikeng/angular-csv-chart-viewer.git" --base-href=/angular-csv-chart-viewer/
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: ./dist/${{ github.event.repository.name }}/browser
+          branch: prod
+          token: ${{ secrets.GH_TOKEN }}
