@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import Papa from 'papaparse';
 
 export interface CsvDataPoint {
   [key: string]: string | number;
@@ -6,8 +7,8 @@ export interface CsvDataPoint {
 
 @Injectable({ providedIn: 'root' })
 export class DataCsvService {
-  private requiredTimeColumns = ['Year_UTC', 'Month_UTC', 'Day_UTC', 'Hour_UTC', 'Minute_UTC', 'Second_UTC'];
-  private requiredInfoColumns = ['Pad', 'Well', 'Stage on Well'];
+  private timeColumns = ['Year_UTC', 'Month_UTC', 'Day_UTC', 'Hour_UTC', 'Minute_UTC', 'Second_UTC'];
+  private infoColumns = ['Pad', 'Well', 'Stage on Well'];
   private availableDataFields: string[] = [];
 
   async parseCsvFile(file: File): Promise<CsvDataPoint[]> {
@@ -20,64 +21,77 @@ export class DataCsvService {
   }
 
   private readFile(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-      reader.readAsText(file);
-    });
+    return file.text(); // simpler modern API
   }
 
   private parseCsvContent(content: string): CsvDataPoint[] {
-    let invalidInfoCount = 0;
-    const lines = content.trim().split(/\r?\n/);
-    if (lines.length < 2) return [];
+    const parsed = Papa.parse(content, {
+      header: true,
+      skipEmptyLines: true,
+      dynamicTyping: false
+    });
 
-    const headers = lines[0].split(',').map(h => h.trim());
-    const result: CsvDataPoint[] = [];
+    const rows = parsed.data as Record<string, string>[];
+    if (!rows.length) return [];
 
+    const headers = Object.keys(rows[0]);
     this.populateAvailableDataFields(headers);
 
-    if (this.requiredTimeColumns.some(col => !headers.includes(col)) || this.requiredInfoColumns.some(col => !headers.includes(col))) {
-        console.warn('Missing required columns.');
-        return [];
-    }
-
-    const colTimeIndexes = Object.fromEntries(this.requiredTimeColumns.map(col => [col, headers.indexOf(col)]));
-    const colInfoIndexes = Object.fromEntries(this.requiredInfoColumns.map(col => [col, headers.indexOf(col)]));
-
-    for (let i = 1; i < lines.length; i++) {
-      const row = lines[i].split(',').map(cell => cell.trim());
-      if (row.length !== headers.length) continue;
-
-      const dataPoint: CsvDataPoint = {};
-      for (let j = 0; j < headers.length; j++) {
-        const key = headers[j];
-        if (key && !key.toLowerCase().startsWith('blank')) {
-          dataPoint[key] = this.parseValue(row[j]);
-        }
-      }
-
-      if (!row[colInfoIndexes['Pad']]?.trim() || !row[colInfoIndexes['Well']]?.trim() || !(parseInt(row[colInfoIndexes['Stage on Well']]) > 0)) {
-        invalidInfoCount++;
-        continue;
-      }
-
-      const year = parseInt(row[colTimeIndexes['Year_UTC']]), month = parseInt(row[colTimeIndexes['Month_UTC']]) - 1, day = parseInt(row[colTimeIndexes['Day_UTC']]), hour = parseInt(row[colTimeIndexes['Hour_UTC']]), minute = parseInt(row[colTimeIndexes['Minute_UTC']]), second = parseInt(row[colTimeIndexes['Second_UTC']]);
-      const parsedDatetime = new Date(Date.UTC(year, month, day, hour, minute, second));
-
-      if (isNaN(parsedDatetime.getTime())) continue;
-
-      dataPoint['timestamp'] = parsedDatetime.toISOString();
-      result.push(dataPoint);
-    }
-    if(invalidInfoCount > 0) console.warn('Skipped invalid info rows:', invalidInfoCount);
-    return result;
+    return rows.map(row => this.transformRow(row)).filter(Boolean) as CsvDataPoint[];
   }
 
-  private parseValue = (value: string): string | number => value === '' || value.toLowerCase() === 'null' ? '' : (isNaN(Number(value)) ? value : Number(value));
+  private transformRow(row: Record<string, string>): CsvDataPoint | null {
+    const dataPoint: CsvDataPoint = {};
+
+    // Copy & parse values
+    for (const key of Object.keys(row)) {
+      if (key && !key.toLowerCase().startsWith('blank')) {
+        dataPoint[key] = this.parseValue(row[key]);
+      }
+    }
+
+    // Handle timestamp
+    const timestamp = this.buildTimestamp(row);
+    dataPoint['timestamp'] = timestamp;
+
+    return dataPoint;
+  }
+
+  private buildTimestamp(row: Record<string, string>): string {
+    const hasAllTimeFields = this.timeColumns.every(col => row[col] !== undefined && row[col] !== '');
+
+    if (hasAllTimeFields) {
+      const year = parseInt(row['Year_UTC']);
+      const month = parseInt(row['Month_UTC']) - 1;
+      const day = parseInt(row['Day_UTC']);
+      const hour = parseInt(row['Hour_UTC']);
+      const minute = parseInt(row['Minute_UTC']);
+      const second = parseInt(row['Second_UTC']);
+
+      const date = new Date(Date.UTC(year, month, day, hour, minute, second));
+
+      if (!isNaN(date.getTime())) {
+        return date.toISOString();
+      }
+    }
+
+    // fallback: current time
+    return new Date().toISOString();
+  }
+
+  private parseValue(value: string): string | number {
+    if (!value || value.toLowerCase() === 'null') return '';
+    const num = Number(value);
+    return isNaN(num) ? value : num;
+  }
 
   private populateAvailableDataFields(headers: string[]): void {
-    this.availableDataFields = headers.filter(h => !h.toLowerCase().startsWith('blank') && h !== 'timestamp' && !this.requiredInfoColumns.includes(h) && !this.requiredTimeColumns.includes(h));
+    this.availableDataFields = headers.filter(
+      h =>
+        !h.toLowerCase().startsWith('blank') &&
+        h !== 'timestamp' &&
+        !this.infoColumns.includes(h) &&
+        !this.timeColumns.includes(h)
+    );
   }
 }
