@@ -72,6 +72,8 @@ export class DataCsvService {
 
       if (!isNaN(date.getTime())) {
         return date.toISOString();
+      } else {
+        console.warn('Invalid date components, using current timestamp for row:', row);
       }
     }
 
@@ -80,7 +82,7 @@ export class DataCsvService {
   }
 
   private parseValue(value: string): string | number {
-    if (!value || value.toLowerCase() === 'null') return '';
+    if (!value || typeof value !== 'string' || value.toLowerCase() === 'null') return '';
     const num = Number(value);
     return isNaN(num) ? value : num;
   }
