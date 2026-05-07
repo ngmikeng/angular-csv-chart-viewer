@@ -47,7 +47,7 @@ export class DataCsvService {
     const colInfoIndexes = Object.fromEntries(this.requiredInfoColumns.map(col => [col, headers.indexOf(col)]));
 
     for (let i = 1; i < lines.length; i++) {
-      const row = lines[i].split(',').map(cell => cell.trim());
+      const row = this.parseCSVRow(lines[i]).map(cell => cell.trim());
       if (row.length !== headers.length) continue;
 
       const dataPoint: CsvDataPoint = {};
@@ -79,5 +79,42 @@ export class DataCsvService {
 
   private populateAvailableDataFields(headers: string[]): void {
     this.availableDataFields = headers.filter(h => !h.toLowerCase().startsWith('blank') && h !== 'timestamp' && !this.requiredInfoColumns.includes(h) && !this.requiredTimeColumns.includes(h));
+  }
+
+  private parseCSVRow(row: string): string[] {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < row.length; i++) {
+      const char = row[i];
+      const next = row[i + 1];
+
+      // Escaped quote
+      if (char === '"' && next === '"') {
+        current += '"';
+        i++;
+        continue;
+      }
+
+      // Toggle quote mode
+      if (char === '"') {
+        inQuotes = !inQuotes;
+        continue;
+      }
+
+      // Field separator
+      if (char === ',' && !inQuotes) {
+        result.push(current);
+        current = '';
+        continue;
+      }
+
+      current += char;
+    }
+
+    result.push(current);
+
+    return result;
   }
 }
